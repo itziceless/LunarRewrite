@@ -26,5 +26,5 @@ for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar
 end
 
 if not isfile('lunar/games/'..game.PlaceId..'.lua') then
-	writefile('lunar/games/'..game.PlaceId..'.lua')
+	writefile('newvape/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId)(...)
 end
