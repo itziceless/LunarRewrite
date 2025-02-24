@@ -34,8 +34,24 @@ local uiassets = {
 	['lunar/uiassets/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'
 }
 
+local function downloadFile(path, func)
+	if not isfile(path) then
+		createDownloader(path)
+		local suc, res = pcall(function()
+		end)
+		if not suc or res == '404: Not Found' then
+			error(res)
+		end
+		if path:find('.lua') then
+			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
+		end
+		writefile(path, res)
+	end
+	return (func or readfile)(path)
+end
+
 uiassets = not inputService.TouchEnabled and assetfunction and function(path)
-	return writefile(path, assetfunction)
+	return downloadFile(path, assetfunction)
 end or function(path)
 	return getcustomassets[path] or ''
 end
