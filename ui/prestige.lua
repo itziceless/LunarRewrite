@@ -31,11 +31,11 @@ local uipallet = {
 }
 
 local uiassets = {
-	['lunar/uiasset/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'	
+	['lunar/uiassets/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'
 }
 
 uiassets = not inputService.TouchEnabled and assetfunction and function(path)
-	return downloadFile(path, assetfunction)
+	return writefile(path, assetfunction)
 end or function(path)
 	return getcustomassets[path] or ''
 end
