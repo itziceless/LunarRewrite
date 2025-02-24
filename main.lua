@@ -6,8 +6,7 @@ local isfile = isfile or function(file)
 	return suc and res ~= nil and res ~= ''
 end
 local delfile = delfile or function(file)
-	  writefile(file, '')
-  end
+	writefile(file, '')
 end
 
 local function wipeFolder(path)
@@ -26,4 +25,6 @@ for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar
 	end
 end
 
-loadstring(downloadFile('lunar/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
+if not isfile('lunar/games/'..game.PlaceId..'.lua') then
+	writefile('lunar/games/'..game.PlaceId..'.lua')
+end
