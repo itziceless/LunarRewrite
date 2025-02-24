@@ -34,7 +34,7 @@ local uiassets = {
 	['lunar/uiasset/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'	
 }
 
-getcustomasset = not inputService.TouchEnabled and assetfunction and function(path)
+uiassets = not inputService.TouchEnabled and assetfunction and function(path)
 	return downloadFile(path, assetfunction)
 end or function(path)
 	return getcustomassets[path] or ''
