@@ -34,10 +34,10 @@ end
 if not isfile('lunar/ui/mode.txt') then
     writefile('lunar/ui/mode.txt', 'prestige')
 end
-local guiasset = readfile('lunar/ui/mode.txt')
+local uiasset = readfile('lunar/ui/mode.txt')
 
-if not isfolder('newvape/assets/'..ui) then
-    makefolder('newvape/assets/'..ui)
+if not isfolder('lunar/uiassets/'..uiasset) then
+    makefolder('lunar/uiassets/'..uiasset)
 end
 
 --if not isfile('lunar/games/'..game.PlaceId..'.lua') then
