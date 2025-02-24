@@ -29,6 +29,13 @@ for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar
 	end
 end
 
-if not isfile('lunar/games/'..game.PlaceId..'.lua') then
-	writefile('newvape/games/'..game.PlaceId..'.lua')
+if not isfile('lunar/ui/mode.txt') then
+	writefile('lunar/ui/mode.txt', 'prestige')
+
+if not isfolder('newvape/assets/'..ui) then
+	makefolder('newvape/assets/'..ui)
 end
+
+--if not isfile('lunar/games/'..game.PlaceId..'.lua') then
+--	writefile('newvape/games/'..game.PlaceId..'.lua')
+--end
