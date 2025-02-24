@@ -26,6 +26,4 @@ for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar
 	end
 end
 
-local function getid(placeid)
-	return game:HttpGet('https://raw.githubusercontent.com/itziceless/LunarRewrite/refs/heads/main/games/'..placeid..".lua", true)
-end
+loadstring(downloadFile('lunar/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
