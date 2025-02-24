@@ -31,5 +31,5 @@ local uipallet = {
 }
 
 local uiassets = {
-	
+	['lunar/uiasset/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'	
 }
