@@ -40,6 +40,17 @@ if not isfolder('lunar/uiassets/'..uiasset) then
     makefolder('lunar/uiassets/'..uiasset)
 end
 
+local commit = subbed:find('currentOid')
+	commit = commit and subbed:sub(commit + 13, commit + 52) or nil
+	commit = commit and #commit == 40 and commit or 'main'
+	if commit == 'main' or (isfile('lunar/libs/cache.txt') and readfile('lunar/libs/cache.txt') or '') ~= commit then
+		wipeFolder('lunar')
+		wipeFolder('lunar/games')
+		wipeFolder('lunar/ui')
+		wipeFolder('lunar/libs')
+	end
+	writefile('lunar/libs/cache.txt', commit)
+end
 --if not isfile('lunar/games/'..game.PlaceId..'.lua') then
 --	writefile('newvape/games/'..game.PlaceId..'.lua')
 --end
