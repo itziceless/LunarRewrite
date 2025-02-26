@@ -30,7 +30,7 @@ local function downloadFile(path, func)
 			error(res)
 		end
 		if path:find('.lua') then
-			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
+			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after lunar updates.\n'..res
 		end
 		writefile(path, res)
 	end
@@ -41,7 +41,7 @@ local function getid(placeid)
     return game:HttpGet('https://raw.githubusercontent.com/itziceless/LunarRewrite/refs/heads/main/games/'..placeid..".lua", true)
 end
 
-for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar/ui'} do
+for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar/ui', 'lunar/config'} do
     if not isfolder(folder) then
         makefolder(folder)
     end
