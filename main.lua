@@ -65,16 +65,22 @@ if not isfile('lunar/libs/wl.json') then
 	writefile('lunar/libs/wl.json', wltext)
 end
 
-local commit = subbed:find('currentOid')
-	commit = commit and subbed:sub(commit + 13, commit + 52) or nil
-	commit = commit and #commit == 40 and commit or 'main'
-	if commit == 'main' or (isfile('lunar/libs/anticache.txt') and readfile('lunar/libs/anticache.txt') or '') ~= commit then
-		wipeFolder('lunar')
-		wipeFolder('lunar/games')
-		wipeFolder('lunar/ui')
-		wipeFolder('lunar/libs')
-	end
-	writefile('lunar/libs/anticache.txt', commit)
+local success, subbed = pcall(function()
+    return game:HttpGet("https://api.github.com/repos/itziceless/LunarRewrite/git/refs/heads/main", true)
+end)
+
+if success and subbed then
+    local commit = subbed:find('currentOid')
+    commit = commit and subbed:sub(commit + 13, commit + 52) or nil
+    commit = commit and #commit == 40 and commit or 'main'
+
+    if commit == 'main' or (isfile('lunar/libs/anticache.txt') and readfile('lunar/libs/anticache.txt') or '') ~= commit then
+        wipeFolder('lunar')
+        wipeFolder('lunar/games')
+        wipeFolder('lunar/ui')
+        wipeFolder('lunar/libs')
+    end
+    writefile('lunar/libs/anticache.txt', commit)
 end
 --if not isfile('lunar/games/'..game.PlaceId..'.lua') then
 --	writefile('newvape/games/'..game.PlaceId..'.lua')
