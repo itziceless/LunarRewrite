@@ -81,7 +81,5 @@ if success and subbed then
         wipeFolder('lunar/libs')
     end
     writefile('lunar/libs/anticache.txt', commit)
+    end
 end
---if not isfile('lunar/games/'..game.PlaceId..'.lua') then
---	writefile('newvape/games/'..game.PlaceId..'.lua')
---end
