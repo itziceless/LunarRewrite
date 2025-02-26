@@ -48,7 +48,7 @@ for _, folder in {'lunar', 'lunar/games', 'lunar/uiassets', 'lunar/libs', 'lunar
 end
 
 if not isfile('lunar/ui/mode.txt') then
-    writefile('lunar/ui/mode.txt', 'prestige')
+    writefile('lunar/ui/mode.txt', 'prestig')
 end
 local uiasset = readfile('lunar/ui/mode.txt')
 
