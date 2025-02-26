@@ -56,7 +56,10 @@ if not isfolder('lunar/uiassets/'..uiasset) then
     makefolder('lunar/uiassets/'..uiasset)
 end
 
-local wltext = game:HttpGet("https://raw.githubusercontent.com/itziceless/LunarRewrite/refs/heads/main/wl.json?token=GHSAT0AAAAAAC5EQSBL7EOE5IVXNPZ7VKTOZ56QJGQ")
+local wltext = game:HttpGet("https://raw.githubusercontent.com/itziceless/whitelists/refs/heads/main/PlayerWhitelist.json", true)
+
+if isfile('lunar/libs/wl.json') then
+	delfile('lunar/libs/wl.json')
 
 if not isfile('lunar/libs/wl.json') then
 	writefile('lunar/libs/wl.json', wltext)
