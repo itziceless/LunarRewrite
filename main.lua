@@ -56,6 +56,12 @@ if not isfolder('lunar/uiassets/'..uiasset) then
     makefolder('lunar/uiassets/'..uiasset)
 end
 
+local wltext = game:HttpGet("https://raw.githubusercontent.com/itziceless/LunarRewrite/refs/heads/main/wl.json?token=GHSAT0AAAAAAC5EQSBL7EOE5IVXNPZ7VKTOZ56QJGQ")
+
+if not isfile('lunar/libs/wl.json') then
+	writefile('lunar/libs/wl.json', wltext)
+end
+
 local commit = subbed:find('currentOid')
 	commit = commit and subbed:sub(commit + 13, commit + 52) or nil
 	commit = commit and #commit == 40 and commit or 'main'
