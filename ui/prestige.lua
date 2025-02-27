@@ -57,28 +57,35 @@ local uipallet = {
 }
 
 local function makeDraggable(gui, window)
-	gui.InputBegan:Connect(function(inputObj)
-		if window and not window.Visible then return end
-		if
-			(inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch)
-			and (inputObj.Position.Y - gui.AbsolutePosition.Y < 40 or window)
-		then
-			local dragPosition = Vector2.new(
-				gui.AbsolutePosition.X - inputObj.Position.X,
-				gui.AbsolutePosition.Y - inputObj.Position.Y + guiService:GetGuiInset().Y
-			) / scale.Scale
+    gui.InputBegan:Connect(function(inputObj)
+        if window and not window.Visible then return end
+        if
+            (inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch)
+            and (inputObj.Position.Y - gui.AbsolutePosition.Y < 40 or window)
+        then
+            local dragPosition = Vector2.new(
+                gui.AbsolutePosition.X - inputObj.Position.X,
+                gui.AbsolutePosition.Y - inputObj.Position.Y + guiService:GetGuiInset().Y
+            ) / scale.Scale
 
-			local changed = inputService.InputChanged:Connect(function(input)
-				if input.UserInputType == (inputObj.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
-					local position = input.Position
-					if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-						dragPosition = (dragPosition // 3) * 3
-						position = (position // 3) * 3
-					end
-					gui.Position = UDim2.fromOffset((position.X / scale.Scale) + dragPosition.X, (position.Y / scale.Scale) + dragPosition.Y)
-					end
-				end)
-			end)
+            local changed
+            changed = inputService.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                    local position = input.Position
+                    if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                        dragPosition = (dragPosition // 3) * 3
+                        position = (position // 3) * 3
+                    end
+                    gui.Position = UDim2.fromOffset((position.X / scale.Scale) + dragPosition.X, (position.Y / scale.Scale) + dragPosition.Y)
+                end
+            end)
+
+            inputObj.InputEnded:Connect(function()
+                changed:Disconnect()
+            end)
+        end
+    end)
+end
 
 local uiassets = {
 	['lunar/uiassets/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'
@@ -102,7 +109,6 @@ local function addCorner(parent, radius)
 	local corner = Instance.new('UICorner')
 	corner.CornerRadius = radius or UDim.new(0, 5)
 	corner.Parent = parent
-
 	return corner
 end
 				
@@ -140,7 +146,7 @@ function mainapi:CreateCategory(categorysettings)
 	window.Position = UDim2.fromOffset(236, 60)
 	window.BackgroundColor3 = uipallet.Main
 	window.AutoButtonColor = false
-	window.Visible = false
+	window.Visible = true
 	window.Text = ''
 	window.Parent = clickgui
 	addBlur(window)
@@ -208,5 +214,5 @@ function mainapi:CreateCategory(categorysettings)
 	end
 	mainapi:CreateCategory({
 	Name = 'Combat',
-	Icon = nil
+	Icon = getcustomasset('lunar/uiassets/prestige/PrestigeIcon.png')
 })
