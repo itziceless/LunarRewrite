@@ -83,6 +83,28 @@ local uiassets = {
 	['lunar/uiassets/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'
 }
 
+local function addBlur(parent, notif)
+	local blur = Instance.new('ImageLabel')
+	blur.Name = 'Blur'
+	blur.Size = UDim2.new(1, 89, 1, 52)
+	blur.Position = UDim2.fromOffset(-48, -31)
+	blur.BackgroundTransparency = 1
+	blur.Image = nil
+	blur.ScaleType = Enum.ScaleType.Slice
+	blur.SliceCenter = Rect.new(52, 31, 261, 502)
+	blur.Parent = parent
+
+	return blur
+end				
+
+local function addCorner(parent, radius)
+	local corner = Instance.new('UICorner')
+	corner.CornerRadius = radius or UDim.new(0, 5)
+	corner.Parent = parent
+
+	return corner
+end
+				
 local function downloadFile(path, func)
 	if not isfile(path) then
 		createDownloader(path)
