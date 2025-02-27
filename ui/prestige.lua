@@ -56,6 +56,29 @@ local uipallet = {
 	Tween = TweenInfo.new(0.16, Enum.EasingStyle.Linear)
 }
 
+local function makeDraggable(gui, window)
+	gui.InputBegan:Connect(function(inputObj)
+		if window and not window.Visible then return end
+		if
+			(inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch)
+			and (inputObj.Position.Y - gui.AbsolutePosition.Y < 40 or window)
+		then
+			local dragPosition = Vector2.new(
+				gui.AbsolutePosition.X - inputObj.Position.X,
+				gui.AbsolutePosition.Y - inputObj.Position.Y + guiService:GetGuiInset().Y
+			) / scale.Scale
+
+			local changed = inputService.InputChanged:Connect(function(input)
+				if input.UserInputType == (inputObj.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
+					local position = input.Position
+					if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+						dragPosition = (dragPosition // 3) * 3
+						position = (position // 3) * 3
+					end
+					gui.Position = UDim2.fromOffset((position.X / scale.Scale) + dragPosition.X, (position.Y / scale.Scale) + dragPosition.Y)
+				end
+			end)
+
 local uiassets = {
 	['lunar/uiassets/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'
 }
