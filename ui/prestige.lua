@@ -77,7 +77,7 @@ local function makeDraggable(gui, window)
 					end
 					gui.Position = UDim2.fromOffset((position.X / scale.Scale) + dragPosition.X, (position.Y / scale.Scale) + dragPosition.Y)
 					end
-				end
+				end)
 			end)
 
 local uiassets = {
