@@ -204,9 +204,8 @@ function mainapi:CreateCategory(categorysettings)
 	windowlist.SortOrder = Enum.SortOrder.LayoutOrder
 	windowlist.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	windowlist.Parent = children
-
+	end
 	mainapi:CreateCategory({
 	Name = 'Combat',
 	Icon = nil
-	Size = UDim2.fromOffset(13, 14)
 })
