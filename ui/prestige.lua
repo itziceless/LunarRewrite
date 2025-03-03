@@ -1,4 +1,4 @@
-local mainapi = {
+local api = {
 	Categories = {},
 	GUIColor = {
 		Hue = 0.46,
@@ -17,93 +17,23 @@ local mainapi = {
 	RainbowUpdateSpeed = {Value = 60},
 	RainbowTable = {},
 	Scale = {Value = 1},
-	ThreadFix = setthreadidentity and true or false,
 	ToggleNotifications = {},
 	BlatantMode = {},
 	Version = 'V2',
 	Windows = {}
 }
 
-local tweenService = cloneref(game:GetService('TweenService'))
-local inputService = cloneref(game:GetService('UserInputService'))
-local textService = cloneref(game:GetService('TextService'))
-local guiService = cloneref(game:GetService('GuiService'))
-local runService = cloneref(game:GetService('RunService'))
-local httpService = cloneref(game:GetService('HttpService'))
-
-local fontsize = Instance.new('GetTextBoundsParams')
-fontsize.Width = math.huge
-local notifications
-local assetfunction = getcustomasset
-local getcustomasset
-local clickgui
-local scaledgui
-local toolblur
-local tooltip
-local scale
-local gui
-
-local color = {}
-local tween = {
-	tweens = {},
-	tweenstwo = {}
-}
-local uipallet = {
+local colorpallet = {
 	Main = Color3.fromRGB(26, 25, 26),
-	Text = Color3.fromRGB(200, 200, 200),
-	Font = Font.fromEnum(Enum.Font.Arial),
-	FontSemiBold = Font.fromEnum(Enum.Font.Arial, Enum.FontWeight.SemiBold),
-	Tween = TweenInfo.new(0.16, Enum.EasingStyle.Linear)
+	Text = Color3.fromRGB(215, 215, 215),
+	Prestige = Color3.fromRGB(138, 43, 226)
 }
 
-local function makeDraggable(gui, window)
-    gui.InputBegan:Connect(function(inputObj)
-        if window and not window.Visible then return end
-        if
-            (inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch)
-            and (inputObj.Position.Y - gui.AbsolutePosition.Y < 40 or window)
-        then
-            local dragPosition = Vector2.new(
-                gui.AbsolutePosition.X - inputObj.Position.X,
-                gui.AbsolutePosition.Y - inputObj.Position.Y + guiService:GetGuiInset().Y
-            ) / scale.Scale
-
-            local changed
-            changed = inputService.InputChanged:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                    local position = input.Position
-                    if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-                        dragPosition = (dragPosition // 3) * 3
-                        position = (position // 3) * 3
-                    end
-                    gui.Position = UDim2.fromOffset((position.X / scale.Scale) + dragPosition.X, (position.Y / scale.Scale) + dragPosition.Y)
-                end
-            end)
-
-            inputObj.InputEnded:Connect(function()
-                changed:Disconnect()
-            end)
-        end
-    end)
-end
-
-local uiassets = {
-	['lunar/uiassets/prestige/PrestigeIcon.png'] = 'rbxassetid://127526403883520'
-}
-
-local function addBlur(parent, notif)
-	local blur = Instance.new('ImageLabel')
-	blur.Name = 'Blur'
-	blur.Size = UDim2.new(1, 89, 1, 52)
-	blur.Position = UDim2.fromOffset(-48, -31)
-	blur.BackgroundTransparency = 1
-	blur.Image = nil
-	blur.ScaleType = Enum.ScaleType.Slice
-	blur.SliceCenter = Rect.new(52, 31, 261, 502)
-	blur.Parent = parent
-
-	return blur
-end				
+local inputService = game:GetService("UserInputService")
+local guiService = game:GetService("GuiService")
+local tweenservice = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local textservice = game:GetService("TextService")
 
 local function addCorner(parent, radius)
 	local corner = Instance.new('UICorner')
@@ -111,30 +41,74 @@ local function addCorner(parent, radius)
 	corner.Parent = parent
 	return corner
 end
-				
-local function downloadFile(path, func)
-	if not isfile(path) then
-		createDownloader(path)
-		local suc, res = pcall(function()
+
+local main = Instance.new("ScreenGui")
+local clickgui = Instance.new("Frame")
+clickgui.BackgroundTransparency = 0
+clickgui.Position = UDim2.new(0, 0, 0, 0)
+clickgui.Size = UDim2.new(0, 3000, 0, 1000)
+clickgui.Parent = main
+clickgui.Transparency = 1
+
+main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local NotificationFrame = Instance.new("Frame")
+NotificationFrame.Size = UDim2.fromScale(0.3, 0.9)
+NotificationFrame.Position = UDim2.fromScale(0.7,0)
+NotificationFrame.BackgroundTransparency = 1
+NotificationFrame.Parent = main
+local NotificationFrameSorter = Instance.new("UIListLayout", NotificationFrame)
+NotificationFrameSorter.VerticalAlignment = Enum.VerticalAlignment.Bottom
+NotificationFrameSorter.HorizontalAlignment = Enum.HorizontalAlignment.Right
+NotificationFrameSorter.Padding = UDim.new(0.015,0)
+
+local function getAccurateTextSize(text, size)
+	return textservice:GetTextSize(text, size, Enum.Font.SourceSans, Vector2.zero).X
+end
+
+function api:CreateNotification(text, duration)
+
+	local Notification = Instance.new("TextLabel", NotificationFrame)
+	Notification.BorderSizePixel = 0
+	Notification.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	Notification.Text = "  "..text
+	Notification.TextColor3 = Color3.fromRGB(255,255,255)
+	Notification.TextSize = 22
+	Notification.TextXAlignment = Enum.TextXAlignment.Left
+	Notification.Font = Enum.Font.SourceSans
+	Notification.BackgroundTransparency = 0
+
+	local size = getAccurateTextSize("  "..text, 22)
+
+	Notification.Size = UDim2.new(0,0,0.055,0)
+
+	tweenservice:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Bounce), {
+		Size = UDim2.new(0.05,size,0.055,0)
+	}):Play()
+
+	local NotificationDuration = Instance.new("Frame", Notification)
+	NotificationDuration.Size = UDim2.fromScale(1, 0.05)
+	NotificationDuration.BorderSizePixel = 0
+	NotificationDuration.BackgroundColor3 = colorpallet.Prestige
+	NotificationDuration.Position = UDim2.fromScale(0,0.95)
+
+	tweenservice:Create(NotificationDuration, TweenInfo.new(duration + 0.3), {
+		Size = UDim2.fromScale(0, 0.05)
+	}):Play()
+
+	task.delay(duration, function()
+		tweenservice:Create(Notification, TweenInfo.new(0.3), {
+			Size = UDim2.fromScale(0, 0.055)
+		}):Play()
+
+		Debris:AddItem(Notification, 0.35)
+
+		task.delay(0.35, function()
 		end)
-		if not suc or res == '404: Not Found' then
-			error(res)
-		end
-		if path:find('.lua') then
-			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
-		end
-		writefile(path, res)
-	end
-	return (func or readfile)(path)
+	end)
 end
 
-uiassets = not inputService.TouchEnabled and assetfunction and function(path)
-	return downloadFile(path, assetfunction)
-end or function(path)
-	return getcustomassets[path] or ''
-end
-
-function mainapi:CreateCategory(categorysettings)
+function api:CreateCategory(categorysettings)
 	local categoryapi = {
 		Type = 'Category',
 		Expanded = false
@@ -142,51 +116,34 @@ function mainapi:CreateCategory(categorysettings)
 
 	local window = Instance.new('TextButton')
 	window.Name = categorysettings.Name..'Category'
-	window.Size = UDim2.fromOffset(220, 41)
-	window.Position = UDim2.fromOffset(236, 60)
-	window.BackgroundColor3 = uipallet.Main
-	window.AutoButtonColor = false
-	window.Visible = true
+	window.Size = UDim2.fromOffset(220, 50)
+	window.Position = categorysettings.pos
+	window.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	window.Font = Enum.Font.ArialBold
 	window.Text = ''
+	window.Visible = true
 	window.Parent = clickgui
-	addBlur(window)
-	addCorner(window)
-	makeDraggable(window)
+	addCorner(window, UDim.new(0, 5))
 	local icon = Instance.new('ImageLabel')
 	icon.Name = 'Icon'
+	icon.BackgroundColor3 = colorpallet.Prestige
 	icon.Size = categorysettings.Size
-	icon.Position = UDim2.fromOffset(12, (icon.Size.X.Offset > 20 and 14 or 13))
-	icon.BackgroundTransparency = 1
+	icon.Position = UDim2.new(0.05, 0, 0.25, 0)
+	icon.BackgroundTransparency = 0
 	icon.Image = categorysettings.Icon
-	icon.ImageColor3 = uipallet.Text
+	addCorner(icon, UDim.new(0, 3))
+	--icon.ImageColor3 = 
 	icon.Parent = window
 	local title = Instance.new('TextLabel')
 	title.Name = 'Title'
-	title.Size = UDim2.new(1, -(categorysettings.Size.X.Offset > 18 and 40 or 33), 0, 41)
-	title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 0)
+	title.Size = UDim2.new(1, -10, 0, 30)
+	title.Position = UDim2.new(0, 5, 0, 10)
+	title.TextColor3 = colorpallet.Text
 	title.BackgroundTransparency = 1
 	title.Text = categorysettings.Name
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.TextColor3 = uipallet.Text
-	title.TextSize = 13
-	title.FontFace = uipallet.Font
+	title.TextSize = 17
+	title.FontFace = Font.new('rbxasset://fonts/families/Arial.json')
 	title.Parent = window
-	local arrowbutton = Instance.new('TextButton')
-	arrowbutton.Name = 'Arrow'
-	arrowbutton.Size = UDim2.fromOffset(40, 40)
-	arrowbutton.Position = UDim2.new(1, -40, 0, 0)
-	arrowbutton.BackgroundTransparency = 1
-	arrowbutton.Text = ''
-	arrowbutton.Parent = window
-	local arrow = Instance.new('ImageLabel')
-	arrow.Name = 'Arrow'
-	arrow.Size = UDim2.fromOffset(9, 4)
-	arrow.Position = UDim2.fromOffset(20, 18)
-	arrow.BackgroundTransparency = 1
-	arrow.Image = getcustomasset('newvape/assets/new/expandup.png')
-	arrow.ImageColor3 = Color3.fromRGB(140, 140, 140)
-	arrow.Rotation = 180
-	arrow.Parent = arrowbutton
 	local children = Instance.new('ScrollingFrame')
 	children.Name = 'Children'
 	children.Size = UDim2.new(1, 0, 1, -41)
@@ -198,21 +155,98 @@ function mainapi:CreateCategory(categorysettings)
 	children.ScrollBarImageTransparency = 0.75
 	children.CanvasSize = UDim2.new()
 	children.Parent = window
-	local divider = Instance.new('Frame')
-	divider.Name = 'Divider'
-	divider.Size = UDim2.new(1, 0, 0, 1)
-	divider.Position = UDim2.fromOffset(0, 37)
-	divider.BackgroundColor3 = Color3.new(1, 1, 1)
-	divider.BackgroundTransparency = 0.928
-	divider.BorderSizePixel = 0
-	divider.Visible = false
-	divider.Parent = window
-	local windowlist = Instance.new('UIListLayout')
-	windowlist.SortOrder = Enum.SortOrder.LayoutOrder
-	windowlist.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	windowlist.Parent = children
-	end
-	mainapi:CreateCategory({
+end
+
+local prestigelogo = Instance.new("ImageLabel")
+prestigelogo.Image = "http://www.roblox.com/asset/?id=86813668617692"
+prestigelogo.Position = UDim2.new(0.01, 0, 0.02, 0)
+prestigelogo.Parent = main
+prestigelogo.Size = UDim2.new(0, 40, 0, 40)
+prestigelogo.BackgroundTransparency = 1
+--prestigelogo.ImageColor3 = colorpallet.Prestige
+
+function api:CreateSearch()
+	local searchbkg = Instance.new('Frame')
+	searchbkg.Name = 'Search'
+	searchbkg.Size = UDim2.fromOffset(350, 45)
+	searchbkg.Position = UDim2.new(0.32, 0, 0.805, 0)
+	searchbkg.AnchorPoint = Vector2.new(0.5, 0)
+	searchbkg.BackgroundColor3 = colorpallet.Main
+	searchbkg.Parent = clickgui
+	local searchicon = Instance.new('ImageLabel')
+	searchicon.Name = 'Icon'
+	searchicon.Size = UDim2.fromOffset(25, 25)
+	searchicon.Position = UDim2.new(1, -35, 0, 10)
+	searchicon.BackgroundTransparency = 0
+	searchicon.BackgroundColor3 = colorpallet.Prestige
+	searchicon.Image = "http://www.roblox.com/asset/?id=103840109005638"
+	searchicon.Parent = searchbkg
+	addCorner(searchicon, UDim.new(0, 5))
+	addCorner(searchbkg, UDim.new(0, 15))
+	local search = Instance.new('TextBox')
+	search.Size = UDim2.new(1, -50, 0, 43)
+	search.Position = UDim2.fromOffset(10, 0)
+	search.BackgroundTransparency = 1
+	search.Text = ''
+	search.PlaceholderText = ''
+	search.TextXAlignment = Enum.TextXAlignment.Left
+	search.TextColor3 = colorpallet.Text
+	search.TextSize = 20
+	search.FontFace = Font.new('rbxasset://fonts/families/Arial.json')
+	search.ClearTextOnFocus = false
+	search.Parent = searchbkg
+	local children = Instance.new('ScrollingFrame')
+	children.Name = 'Children'
+	children.Size = UDim2.new(1, 0, 1, -37)
+	children.Position = UDim2.fromOffset(0, 34)
+	children.BackgroundTransparency = 1
+	children.BorderSizePixel = 0
+	children.ScrollBarThickness = 2
+	children.ScrollBarImageTransparency = 0.75
+	children.CanvasSize = UDim2.new()
+	children.Parent = searchbkg
+end
+
+api:CreateSearch()
+
+api:CreateCategory({
 	Name = 'Combat',
-	Icon = getcustomasset('lunar/uiassets/prestige/PrestigeIcon.png')
+	Size = UDim2.fromOffset(25, 25),
+	Icon = "http://www.roblox.com/asset/?id=109195603850108",
+	pos = UDim2.new(0.04, 0, 0.02, 0)
 })
+api:CreateCategory({
+	Name = 'Movement',
+	Size = UDim2.fromOffset(25, 25),
+	Icon = "http://www.roblox.com/asset/?id=89873181315335",
+	pos = UDim2.new(0.14, 0, 0.02, 0)
+})
+api:CreateCategory({
+	Name = 'Misc',
+	Size = UDim2.fromOffset(25, 25),
+	Icon = "http://www.roblox.com/asset/?id=76981932323919",
+	pos = UDim2.new(0.24, 0, 0.02, 0)
+})
+api:CreateCategory({
+	Name = 'Visual',
+	Size = UDim2.fromOffset(25, 25),
+	Icon = "http://www.roblox.com/asset/?id=115442374798748",
+	pos = UDim2.new(0.34, 0, 0.02, 0)
+})
+api:CreateCategory({
+	Name = 'Menu',
+	Size = UDim2.fromOffset(25, 25),
+	Icon = "http://www.roblox.com/asset/?id=109565389753955",
+	pos = UDim2.new(0.44, 0, 0.02, 0)
+})
+api:CreateCategory({
+	Name = 'Configs',
+	Size = UDim2.fromOffset(25, 25),
+	Icon = "http://www.roblox.com/asset/?id=74786744003005",
+	pos = UDim2.new(0.54, 0, 0.02, 0)
+})
+
+api:CreateNotification("This is a test!", 6)
+api:CreateNotification("This is a test!", 5)
+api:CreateNotification("This is a test!", 4)
+api:CreateNotification("This is a test!", 3)
