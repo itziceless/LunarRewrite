@@ -1,24 +1,19 @@
 local api = {
-	Categories = {},
-	GUIColor = {
-		Hue = 0.46,
-		Sat = 0.96,
-		Value = 0.52
+	Categories = {
+		"Combat",
+		"Movement",
+		"Misc",
+		"Menu",
+		"Configs"
 	},
 	HeldKeybinds = {},
 	Keybind = {'RightShift'},
-	Loaded = false,
+	Loaded = true,
 	Libraries = {},
 	Modules = {},
 	Place = game.PlaceId,
-	Profile = 'Lunar',
-	Profiles = {},
-	RainbowSpeed = {Value = 1},
-	RainbowUpdateSpeed = {Value = 60},
-	RainbowTable = {},
 	Scale = {Value = 1},
 	ToggleNotifications = {},
-	BlatantMode = {},
 	Version = 'V2',
 	Windows = {}
 }
@@ -26,7 +21,8 @@ local api = {
 local colorpallet = {
 	Main = Color3.fromRGB(26, 25, 26),
 	Text = Color3.fromRGB(215, 215, 215),
-	Prestige = Color3.fromRGB(138, 43, 226)
+	Prestige = Color3.fromRGB(138, 43, 226),
+	Font = Font.new('rbxasset://fonts/families/Arial.json')
 }
 
 local inputService = game:GetService("UserInputService")
@@ -34,12 +30,33 @@ local guiService = game:GetService("GuiService")
 local tweenservice = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
 local textservice = game:GetService("TextService")
+local scale
 
 local function addCorner(parent, radius)
 	local corner = Instance.new('UICorner')
 	corner.CornerRadius = radius or UDim.new(0, 5)
 	corner.Parent = parent
 	return corner
+end
+
+local function addMaid(object)
+	object.Connections = {}
+	function object:Clean(callback)
+		if typeof(callback) == 'Instance' then
+			table.insert(self.Connections, {
+				Disconnect = function()
+					callback:ClearAllChildren()
+					callback:Destroy()
+				end
+			})
+		elseif type(callback) == 'function' then
+			table.insert(self.Connections, {
+				Disconnect = callback
+			})
+		else
+			table.insert(self.Connections, callback)
+		end
+	end
 end
 
 local main = Instance.new("ScreenGui")
@@ -108,22 +125,31 @@ function api:CreateNotification(text, duration)
 	end)
 end
 
+
+-- First, modify the category creation function to include `CreateModule` for all categories
+-- Create a table to store categories by name
+api.Categories = {}
+
+-- Modify the CreateCategory function to store categories as objects in api.Categories
 function api:CreateCategory(categorysettings)
 	local categoryapi = {
 		Type = 'Category',
 		Expanded = false
 	}
 
+	-- Create the window for the category
 	local window = Instance.new('TextButton')
-	window.Name = categorysettings.Name..'Category'
+	window.Name = categorysettings.Name .. 'Category'
 	window.Size = UDim2.fromOffset(220, 50)
 	window.Position = categorysettings.pos
-	window.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	window.BackgroundColor3 = colorpallet.Main
 	window.Font = Enum.Font.ArialBold
 	window.Text = ''
 	window.Visible = true
 	window.Parent = clickgui
 	addCorner(window, UDim.new(0, 5))
+
+	-- Create the icon for the category
 	local icon = Instance.new('ImageLabel')
 	icon.Name = 'Icon'
 	icon.BackgroundColor3 = colorpallet.Prestige
@@ -132,8 +158,9 @@ function api:CreateCategory(categorysettings)
 	icon.BackgroundTransparency = 0
 	icon.Image = categorysettings.Icon
 	addCorner(icon, UDim.new(0, 3))
-	--icon.ImageColor3 = 
 	icon.Parent = window
+
+	-- Create the title for the category
 	local title = Instance.new('TextLabel')
 	title.Name = 'Title'
 	title.Size = UDim2.new(1, -10, 0, 30)
@@ -144,70 +171,86 @@ function api:CreateCategory(categorysettings)
 	title.TextSize = 17
 	title.FontFace = Font.new('rbxasset://fonts/families/Arial.json')
 	title.Parent = window
-	local children = Instance.new('ScrollingFrame')
-	children.Name = 'Children'
-	children.Size = UDim2.new(1, 0, 1, -41)
-	children.Position = UDim2.fromOffset(0, 37)
-	children.BackgroundTransparency = 1
-	children.BorderSizePixel = 0
-	children.Visible = false
-	children.ScrollBarThickness = 2
-	children.ScrollBarImageTransparency = 0.75
-	children.CanvasSize = UDim2.new()
-	children.Parent = window
+
+	-- Create the frame to hold the modules
+	local ModuleFrame = Instance.new("ScrollingFrame")
+	ModuleFrame.Parent = window
+	ModuleFrame.Position = UDim2.fromScale(0, 1)
+	ModuleFrame.Size = UDim2.fromScale(1, 15)
+	ModuleFrame.BackgroundTransparency = 1
+	local ModuleFrameSorter = Instance.new("UIListLayout", ModuleFrame)
+	ModuleFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
+
+	
+	function categoryapi:CreateModule(modulesettings)
+		
+		if api.Modules[modulesettings.Name] then
+			return
+		end
+
+		local moduleapi = {
+			Enabled = false,
+			Options = {},
+			Bind = {},
+			ExtraText = modulesettings.ExtraText,
+			Name = modulesettings.Name,
+			Category = categorysettings.Name
+		}
+
+		local modulebutton = Instance.new('TextButton')
+		modulebutton.Name = modulesettings.Name
+		modulebutton.Size = UDim2.fromOffset(220, 40)
+		modulebutton.BackgroundColor3 = colorpallet.Main
+		modulebutton.BorderSizePixel = 0
+		modulebutton.AutoButtonColor = false
+		modulebutton.Text = '            '..modulesettings.Name
+		modulebutton.TextXAlignment = Enum.TextXAlignment.Left
+		modulebutton.TextColor3 = colorpallet.Text
+		modulebutton.TextSize = 14
+		modulebutton.FontFace = colorpallet.Font
+		modulebutton.Parent = ModuleFrame
+		local arrowbutton = Instance.new('TextButton')
+		arrowbutton.Name = 'Arrow'
+		arrowbutton.Size = UDim2.fromOffset(25, 40)
+		arrowbutton.Position = UDim2.new(1, -30, 0, 0)
+		arrowbutton.BackgroundTransparency = 1
+		arrowbutton.Text = ''
+		arrowbutton.Parent = modulebutton
+		local arrow = Instance.new('ImageLabel')
+		arrow.Name = 'Arrow'
+		arrow.Size = UDim2.fromOffset(16, 16)
+		arrow.Position = UDim2.fromOffset(3, 12)
+		arrow.BackgroundTransparency = 1
+		arrow.Image = "http://www.roblox.com/asset/?id=99555841278473"
+		arrow.Parent = arrowbutton
+
+		
+		addMaid(moduleapi)
+
+		
+		api.Modules[modulesettings.Name] = moduleapi
+
+		
+		modulebutton.MouseButton1Click:Connect(function()
+			modulesettings.Function()
+		end)
+
+
+		if modulesettings.Bind then
+			inputService.InputBegan:Connect(function(input, processed)
+				if processed then return end
+				for _, bind in pairs(modulesettings.Bind) do
+					if input.UserInputType == bind.InputType and input.KeyCode == bind.Key then
+						modulesettings.Function()
+					end
+				end
+			end)
+		end
+	end
+
+	api.Categories[categorysettings.Name] = categoryapi
 end
 
-local prestigelogo = Instance.new("ImageLabel")
-prestigelogo.Image = "http://www.roblox.com/asset/?id=86813668617692"
-prestigelogo.Position = UDim2.new(0.01, 0, 0.02, 0)
-prestigelogo.Parent = main
-prestigelogo.Size = UDim2.new(0, 40, 0, 40)
-prestigelogo.BackgroundTransparency = 1
---prestigelogo.ImageColor3 = colorpallet.Prestige
-
-function api:CreateSearch()
-	local searchbkg = Instance.new('Frame')
-	searchbkg.Name = 'Search'
-	searchbkg.Size = UDim2.fromOffset(350, 45)
-	searchbkg.Position = UDim2.new(0.32, 0, 0.805, 0)
-	searchbkg.AnchorPoint = Vector2.new(0.5, 0)
-	searchbkg.BackgroundColor3 = colorpallet.Main
-	searchbkg.Parent = clickgui
-	local searchicon = Instance.new('ImageLabel')
-	searchicon.Name = 'Icon'
-	searchicon.Size = UDim2.fromOffset(25, 25)
-	searchicon.Position = UDim2.new(1, -35, 0, 10)
-	searchicon.BackgroundTransparency = 0
-	searchicon.BackgroundColor3 = colorpallet.Prestige
-	searchicon.Image = "http://www.roblox.com/asset/?id=103840109005638"
-	searchicon.Parent = searchbkg
-	addCorner(searchicon, UDim.new(0, 5))
-	addCorner(searchbkg, UDim.new(0, 15))
-	local search = Instance.new('TextBox')
-	search.Size = UDim2.new(1, -50, 0, 43)
-	search.Position = UDim2.fromOffset(10, 0)
-	search.BackgroundTransparency = 1
-	search.Text = ''
-	search.PlaceholderText = ''
-	search.TextXAlignment = Enum.TextXAlignment.Left
-	search.TextColor3 = colorpallet.Text
-	search.TextSize = 20
-	search.FontFace = Font.new('rbxasset://fonts/families/Arial.json')
-	search.ClearTextOnFocus = false
-	search.Parent = searchbkg
-	local children = Instance.new('ScrollingFrame')
-	children.Name = 'Children'
-	children.Size = UDim2.new(1, 0, 1, -37)
-	children.Position = UDim2.fromOffset(0, 34)
-	children.BackgroundTransparency = 1
-	children.BorderSizePixel = 0
-	children.ScrollBarThickness = 2
-	children.ScrollBarImageTransparency = 0.75
-	children.CanvasSize = UDim2.new()
-	children.Parent = searchbkg
-end
-
-api:CreateSearch()
 
 api:CreateCategory({
 	Name = 'Combat',
@@ -215,30 +258,35 @@ api:CreateCategory({
 	Icon = "http://www.roblox.com/asset/?id=109195603850108",
 	pos = UDim2.new(0.04, 0, 0.02, 0)
 })
+
 api:CreateCategory({
 	Name = 'Movement',
 	Size = UDim2.fromOffset(25, 25),
 	Icon = "http://www.roblox.com/asset/?id=89873181315335",
 	pos = UDim2.new(0.14, 0, 0.02, 0)
 })
+
 api:CreateCategory({
 	Name = 'Misc',
 	Size = UDim2.fromOffset(25, 25),
 	Icon = "http://www.roblox.com/asset/?id=76981932323919",
 	pos = UDim2.new(0.24, 0, 0.02, 0)
 })
+
 api:CreateCategory({
 	Name = 'Visual',
 	Size = UDim2.fromOffset(25, 25),
 	Icon = "http://www.roblox.com/asset/?id=115442374798748",
 	pos = UDim2.new(0.34, 0, 0.02, 0)
 })
+
 api:CreateCategory({
 	Name = 'Menu',
 	Size = UDim2.fromOffset(25, 25),
 	Icon = "http://www.roblox.com/asset/?id=109565389753955",
 	pos = UDim2.new(0.44, 0, 0.02, 0)
 })
+
 api:CreateCategory({
 	Name = 'Configs',
 	Size = UDim2.fromOffset(25, 25),
@@ -246,7 +294,9 @@ api:CreateCategory({
 	pos = UDim2.new(0.54, 0, 0.02, 0)
 })
 
-api:CreateNotification("This is a test!", 6)
-api:CreateNotification("This is a test!", 5)
-api:CreateNotification("This is a test!", 4)
-api:CreateNotification("This is a test!", 3)
+api.Categories.Menu:CreateModule({
+	Name = "HUD",
+	Function = function()
+		api:CreateNotification("HUD works", 6)
+	end,
+})
