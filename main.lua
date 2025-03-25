@@ -82,4 +82,6 @@ if success and subbed then
     end
     writefile('lunar/libs/anticache.txt', commit)
     end
+	lnr = loadstring(downloadFile('newvape/guis/'..gui..'.lua'), 'gui')()
+	shared.lunar = lnr
 end
