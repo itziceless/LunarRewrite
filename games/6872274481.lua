@@ -14,8 +14,6 @@ local contextActionService = cloneref(game:GetService('ContextActionService'))
 local coreGui = cloneref(game:GetService('CoreGui'))
 local starterGui = cloneref(game:GetService('StarterGui'))
 
-Ocean.api.Categories.Combat:CreateModule({
-     Name = "Killaura"
-     Function = function()
-end,
-})			
+local remotes = {
+	
+}
